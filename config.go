@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 )
 
 type Config struct {
@@ -17,9 +17,8 @@ type ConfigHost struct {
 	Identity *string `json:"identity"`
 }
 
-
 func getConfig() (*Config, error) {
-	bytes, err := ioutil.ReadFile("config.json")
+	bytes, err := os.ReadFile("config.json")
 	if err != nil {
 		return nil, err
 	}

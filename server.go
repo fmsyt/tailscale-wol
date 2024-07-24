@@ -5,14 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"html"
-	"log/slog"
 	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"golang.org/x/crypto/ssh"
 	"tailscale.com/tsnet"
-	"github.com/joho/godotenv"
 )
 
 var (
@@ -51,9 +51,9 @@ func serve() {
 
 		fmt.Fprintf(w, "<html><body><h1>Hello, tailnet!</h1>\n")
 		fmt.Fprintf(w, "<p>You are <b>%s</b> from <b>%s</b> (%s)</p>",
-		html.EscapeString(who.UserProfile.LoginName),
-		html.EscapeString(firstLabel(who.Node.ComputedName)),
-		r.RemoteAddr)
+			html.EscapeString(who.UserProfile.LoginName),
+			html.EscapeString(firstLabel(who.Node.ComputedName)),
+			r.RemoteAddr)
 	})
 
 	http.HandleFunc("/run/", func(w http.ResponseWriter, r *http.Request) {
@@ -63,22 +63,22 @@ func serve() {
 			return
 		}
 
-		appConfig, err := getConfig()
+		c, err := getConfig()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
-		hosts := appConfig.Hosts
+		hosts := c.Hosts
 
-		mac_address := r.URL.Query().Get("a")
-		if mac_address == "" {
+		a := r.URL.Query().Get("a")
+		if a == "" {
 			http.Error(w, "mac address is required", 400)
 		}
-		mac_address = strings.Replace(mac_address, "-", ":", -1)
+		a = strings.Replace(a, "-", ":", -1)
 
-		// command := fmt.Sprintf("/usr/bin/wakeonlan %s", mac_address)
-		command := fmt.Sprintf("echo 'a=%s'", mac_address)
+		// cmd := fmt.Sprintf("/usr/bin/wakeonlan %s", mac_address)
+		cmd := fmt.Sprintf("echo 'a=%s'", a)
 
 		if len(hosts) == 0 {
 			http.Error(w, "host is not defined", 400)
@@ -87,7 +87,7 @@ func serve() {
 
 		host := hosts[0]
 
-		stdout, err := wol(host.Host, host.User, command, host.Port, host.Password, host.Identity)
+		stdout, err := wol(host.Host, host.User, cmd, host.Port, host.Password, host.Identity)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -109,21 +109,23 @@ func firstLabel(s string) string {
 
 func wol(host string, user string, command string, port *int, password *string, identityFile *string) (string, error) {
 
-	config := &ssh.ClientConfig{
-		User: user,
+	c := &ssh.ClientConfig{
+		User:            user,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // password認証は設定
 	}
 
 	if password != nil {
-		config.Auth = append(config.Auth, ssh.Password(*password))
+		c.Auth = append(c.Auth, ssh.Password(*password))
 	}
 
-	p := *port
-	if port == nil {
-		p = 22
+	var p int
+	if port != nil {
+		p = *port
+	} else {
+		p = 22 // Default port value
 	}
 
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host, p), config)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host, p), c)
 	if err != nil {
 		return "", err
 	}
