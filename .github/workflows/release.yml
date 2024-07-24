@@ -41,7 +41,14 @@ jobs:
       run: go build -ldflags="-s -w" -trimpath
 
     - name: Archive
-      run: zip -r release.zip ./wol ./.env.example ./config.schema.json ./config.json.example ./public
+      run: |
+        zip -r release.zip \
+          ./wol \
+          ./.env.example \
+          ./config.schema.json \
+          ./config.json.example \
+          ./setup-service.sh \
+          ./public
 
     - name: Create release
       id: create_release
