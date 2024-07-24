@@ -7,7 +7,14 @@ fi
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-source ${SCRIPT_DIR}/.env
+if [ "${TS_AUTHKEY}" == "" ]; then
+  source ${SCRIPT_DIR}/.env
+fi
+
+if [ "${TS_AUTHKEY}" == "" ]; then
+  echo "Please set TS_AUTHKEY"
+  exit 1
+fi
 
 cat << EOF > /etc/systemd/system/tailscale-wol.service
 [Unit]
