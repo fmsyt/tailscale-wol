@@ -77,7 +77,8 @@ func serve() {
 		}
 		mac_address = strings.Replace(mac_address, "-", ":", -1)
 
-		command := fmt.Sprintf("/usr/bin/wakeonlan %s", mac_address)
+		// command := fmt.Sprintf("/usr/bin/wakeonlan %s", mac_address)
+		command := fmt.Sprintf("echo 'a=%s'", mac_address)
 
 		if len(hosts) == 0 {
 			http.Error(w, "host is not defined", 400)
@@ -86,11 +87,13 @@ func serve() {
 
 		host := hosts[0]
 
-		_, err = wol(host.Host, host.User, command, host.Port, host.Password, host.Identity)
+		stdout, err := wol(host.Host, host.User, command, host.Port, host.Password, host.Identity)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
+
+		fmt.Fprintf(w, "%s", stdout)
 
 	})
 
