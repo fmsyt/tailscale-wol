@@ -26,3 +26,4 @@ go.work.sum
 
 dist/
 public/
+config.json
