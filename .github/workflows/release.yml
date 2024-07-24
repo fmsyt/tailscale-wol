@@ -38,15 +38,10 @@ jobs:
       run: go get .
 
     - name: Build
-      run: go build -ldflags="-s -w" -trimpath -o ./dist/
+      run: go build -ldflags="-s -w" -trimpath
 
     - name: Archive
-      run: |
-        cp ./.env.example ./dist/
-        cp ./config.schema.json ./dist/
-        cp ./config.json.example ./dist/
-        cp -r ./public ./dist/
-        zip release.zip ./dist/* ./dist/.*
+      run: zip -r release.zip ./.env.example ./config.schema.json ./config.json.example ./public
 
     - name: Create release
       id: create_release
