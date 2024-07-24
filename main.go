@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html"
 	"io/ioutil"
+	"log/slog"
 	"log"
 	"net/http"
 	"strings"
@@ -25,8 +26,9 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		slog.Info("Cannot load .env file")
 	}
+
 	flag.Parse()
 	s := new(tsnet.Server)
 	s.Hostname = *hostname
@@ -51,9 +53,9 @@ func main() {
 
 		fmt.Fprintf(w, "<html><body><h1>Hello, tailnet!</h1>\n")
 		fmt.Fprintf(w, "<p>You are <b>%s</b> from <b>%s</b> (%s)</p>",
-			html.EscapeString(who.UserProfile.LoginName),
-			html.EscapeString(firstLabel(who.Node.ComputedName)),
-			r.RemoteAddr)
+		html.EscapeString(who.UserProfile.LoginName),
+		html.EscapeString(firstLabel(who.Node.ComputedName)),
+		r.RemoteAddr)
 	})
 
 	http.HandleFunc("/run/", func(w http.ResponseWriter, r *http.Request) {
