@@ -77,24 +77,22 @@ func serve() {
 		}
 		a = strings.Replace(a, "-", ":", -1)
 
-		// cmd := fmt.Sprintf("/usr/bin/wakeonlan %s", mac_address)
-		cmd := fmt.Sprintf("echo 'a=%s'", a)
-
-		if len(hosts) == 0 {
-			http.Error(w, "host is not defined", 400)
-			return
+		t := findTarget(a, c)
+		if t == nil {
+			t = &ConfigTarget{Mac: a}
 		}
 
-		host := hosts[0]
+		for _, host := range hosts {
+			cmd := buildWolCommand(a, t.Ip, t.Port)
 
-		stdout, err := wol(host.Host, host.User, cmd, host.Port, host.Password, host.Identity)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
+			_, err := sendCommand(host.Host, host.User, cmd, host.Port, host.Password, host.Identity)
+			if err == nil {
+				http.ResponseWriter.WriteHeader(w, 204)
+				return
+			}
 		}
 
-		fmt.Fprintf(w, "%s", stdout)
-
+		http.Error(w, "Failed to send WOL", 500)
 	})
 
 	http.Handle("/", http.FileServer(http.Dir("public/")))
@@ -107,7 +105,7 @@ func firstLabel(s string) string {
 	return s
 }
 
-func wol(host string, user string, command string, port *int, password *string, identityFile *string) (string, error) {
+func sendCommand(host string, user string, command string, port *int, password *string, identityFile *string) (string, error) {
 
 	c := &ssh.ClientConfig{
 		User:            user,
@@ -147,4 +145,23 @@ func wol(host string, user string, command string, port *int, password *string, 
 	}
 
 	return b.String(), nil
+}
+
+func buildWolCommand(mac string, broadcast_ip *string, port *int) string {
+	var ip string
+	if broadcast_ip != nil {
+		ip = *broadcast_ip
+	} else {
+		ip = "255.255.255.255" // Default broadcast ip
+	}
+
+	var p int
+	if port != nil {
+		p = *port
+	} else {
+		p = 9 // Default port value
+	}
+
+	tpl := "bash -c '(for a in {1..6}; do echo -en \"\\xFF\"; done; for a in {1..16}; do echo -en \"\\x%s\"; done) | netcat -b -w1 -u %s %d'"
+	return fmt.Sprintf(tpl, mac, ip, p)
 }
