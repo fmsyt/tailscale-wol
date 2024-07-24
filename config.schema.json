@@ -90,6 +90,16 @@
             "type": "string",
             "default": "255.255.255.255",
             "title": "IP address of the target device"
+          },
+          "preferredCommand": {
+            "type": "string",
+            "default": "wol",
+            "title": "Preferred command to wake up the target device",
+            "anyOf": [
+              {
+                "enum": ["wol", "netcat"]
+              }
+            ]
           }
         }
       }

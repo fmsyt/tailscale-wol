@@ -20,9 +20,10 @@ type ConfigHost struct {
 }
 
 type ConfigTarget struct {
-	Mac  string  `json:"mac"`
-	Port *int    `json:"port"`
-	Ip   *string `json:"ip"`
+	Mac              string  `json:"mac"`
+	Port             *int    `json:"port"`
+	Ip               *string `json:"ip"`
+	PreferredCommand *string `json:"preferredCommand"`
 }
 
 func getConfig() (*Config, error) {

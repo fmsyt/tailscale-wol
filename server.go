@@ -94,11 +94,25 @@ func serve() {
 		}
 
 		for _, host := range hosts {
-			cmd := buildWolCommand(a, t.Ip, t.Port)
+
+			var cmd string
+
+			if t.PreferredCommand == nil {
+				cmd = buildNetCatCommand(a, t.Ip, t.Port)
+			} else if *t.PreferredCommand == "wol" {
+				cmd = buildWakeOnLanCommand(a, t.Ip, t.Port)
+			} else if *t.PreferredCommand == "netcat" {
+				cmd = buildNetCatCommand(a, t.Ip, t.Port)
+			} else {
+				http.Error(w, "Invalid preferredCommand", 400)
+				return
+			}
 
 			_, err := sendCommand(host.Host, host.User, cmd, host.Port, host.Password, host.Identity)
 			if err == nil {
-				http.ResponseWriter.WriteHeader(w, 204)
+				// http.ResponseWriter.WriteHeader(w, 204)
+				fmt.Printf("Sent WOL to %s\n", a)
+				fmt.Printf("Command: %s", cmd)
 				return
 			}
 		}
@@ -106,7 +120,11 @@ func serve() {
 		http.Error(w, "Failed to send WOL", 500)
 	})
 
-	http.Handle("/", http.FileServer(http.Dir("public/")))
+	appPath, err := appPath()
+	if err == nil {
+		publicDir := filepath.Join(appPath, "public/")
+		http.Handle("/", http.FileServer(http.Dir(publicDir)))
+	}
 
 	log.Fatal(http.Serve(ln, nil))
 }
@@ -158,7 +176,7 @@ func sendCommand(host string, user string, command string, port *int, password *
 	return b.String(), nil
 }
 
-func buildWolCommand(mac string, broadcast_ip *string, port *int) string {
+func buildNetCatCommand(mac string, broadcast_ip *string, port *int) string {
 	var ip string
 	if broadcast_ip != nil {
 		ip = *broadcast_ip
@@ -175,4 +193,23 @@ func buildWolCommand(mac string, broadcast_ip *string, port *int) string {
 
 	tpl := "bash -c '(for a in {1..6}; do echo -en \"\\xFF\"; done; for a in {1..16}; do echo -en \"\\x%s\"; done) | netcat -b -w1 -u %s %d'"
 	return fmt.Sprintf(tpl, mac, ip, p)
+}
+
+func buildWakeOnLanCommand(mac string, broadcast_ip *string, port *int) string {
+	var ip string
+	if broadcast_ip != nil {
+		ip = *broadcast_ip
+	} else {
+		ip = "255.255.255.255" // Default broadcast ip
+	}
+
+	var p int
+	if port != nil {
+		p = *port
+	} else {
+		p = 9 // Default port value
+	}
+
+	tpl := "wakeonlan -i %s -p %d %s"
+	return fmt.Sprintf(tpl, ip, p, mac)
 }

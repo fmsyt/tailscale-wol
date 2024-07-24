@@ -12,7 +12,8 @@
     {
       "mac": "ab:cd:ef:01:23:45",
       "ip": "255.255.255.255",
-      "port": 9
+      "port": 9,
+      "preferredCommand": "wol"
     }
   ]
 }
