@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "default": {},
+  "title": "Root Schema",
+  "required": [
+    "hosts"
+  ],
+  "properties": {
+    "hosts": {
+      "type": "array",
+      "default": [],
+      "title": "The hosts Schema",
+      "items": {
+        "type": "object",
+        "default": {},
+        "title": "A Schema",
+        "required": [
+          "host",
+          "user"
+        ],
+        "properties": {
+          "host": {
+            "type": "string",
+            "title": "Hostname or IP address of the host from Tailscale"
+          },
+          "user": {
+            "type": "string",
+            "title": "User name for the host"
+          },
+          "port": {
+            "type": "integer",
+            "default": 22,
+            "title": "SSH port"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password for the user or the path to the identity file"
+          },
+          "identity": {
+            "type": "string",
+            "title": "Path to the identity file"
+          }
+        },
+        "examples": [
+          {
+            "host": "rpi",
+            "user": "hoge",
+            "port": 22,
+            "password": "hoge"
+          }
+        ]
+      },
+      "examples": [
+        [
+          {
+            "host": "rpi",
+            "user": "hoge",
+            "port": 22,
+            "password": "fuga"
+          }
+        ]
+      ]
+    }
+  }
+}

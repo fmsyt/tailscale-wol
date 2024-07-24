@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"html"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -48,7 +50,7 @@ func main() {
 			r.RemoteAddr)
 	})
 
-	http.HandleFunc("/wol/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/run/", func(w http.ResponseWriter, r *http.Request) {
 		_, err := lc.WhoIs(r.Context(), r.RemoteAddr)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
@@ -104,4 +106,28 @@ func main() {
 func firstLabel(s string) string {
 	s, _, _ = strings.Cut(s, ".")
 	return s
+}
+
+type Config struct {
+	Hosts []ConfigHost
+}
+
+type ConfigHost struct {
+	host     string
+	user     string
+	port     *int
+	password *string
+	identity *string
+}
+
+func readConfigFromFile() (*Config, error) {
+	bytes, err := ioutil.ReadFile("config.json")
+	if err != nil {
+		return nil, err
+	}
+
+	var config Config
+	err = json.Unmarshal(bytes, &config)
+
+	return &config, err
 }

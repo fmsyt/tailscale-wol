@@ -1,0 +1,11 @@
+{
+  "$schema": "./config.schema.json",
+  "hosts": [
+    {
+      "host": "rpi",
+      "user": "hoge",
+      "port": 22,
+      "password": "hoge"
+    }
+  ]
+}
