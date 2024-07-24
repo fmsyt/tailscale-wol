@@ -24,7 +24,7 @@ StandardOutput=journal
 StandardError=journal
 Environment="HOME=/root"
 Environment="XDG_CONFIG_HOME=/root/.config"
-TS_AUTHKEY=${TS_AUTHKEY}
+Environment="TS_AUTHKEY=${TS_AUTHKEY}"
 
 [Install]
 WantedBy=multi-user.target
