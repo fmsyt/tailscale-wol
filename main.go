@@ -13,6 +13,7 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"tailscale.com/tsnet"
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -21,6 +22,11 @@ var (
 )
 
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	flag.Parse()
 	s := new(tsnet.Server)
 	s.Hostname = *hostname
@@ -36,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("/hoge/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/whoami/", func(w http.ResponseWriter, r *http.Request) {
 		who, err := lc.WhoIs(r.Context(), r.RemoteAddr)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
@@ -98,7 +104,7 @@ func main() {
 		fmt.Fprint(w, b.String())
 	})
 
-	http.Handle("/", http.FileServer(http.Dir("dist/")))
+	http.Handle("/", http.FileServer(http.Dir("public/")))
 
 	log.Fatal(http.Serve(ln, nil))
 }
