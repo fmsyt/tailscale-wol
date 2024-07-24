@@ -7,6 +7,8 @@ fi
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+source ${SCRIPT_DIR}/.env
+
 cat << EOF > /etc/systemd/system/tailscale-wol.service
 [Unit]
 Description=Start wol service on tailscaled
@@ -18,6 +20,11 @@ KillMode=process
 RemainAfterExit=yes
 Restart=on-failure
 RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+Environment="HOME=/root"
+Environment="XDG_CONFIG_HOME=/root/.config"
+TS_AUTHKEY=${TS_AUTHKEY}
 
 [Install]
 WantedBy=multi-user.target
