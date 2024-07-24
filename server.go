@@ -8,6 +8,8 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -22,9 +24,18 @@ var (
 
 func serve() {
 
-	err := godotenv.Load()
-	if err != nil {
-		slog.Info("Cannot load .env file")
+	k := os.Getenv("TS_AUTHKEY")
+	if k == "" {
+		appPath, err := appPath()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		dotenvPath := filepath.Join(appPath, ".env")
+		err = godotenv.Load(dotenvPath)
+		if err != nil {
+			slog.Info("Cannot load .env file")
+		}
 	}
 
 	flag.Parse()

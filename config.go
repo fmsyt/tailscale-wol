@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
 
 type Config struct {
@@ -25,7 +26,14 @@ type ConfigTarget struct {
 }
 
 func getConfig() (*Config, error) {
-	bytes, err := os.ReadFile("config.json")
+	execDir, err := appPath()
+	if err != nil {
+		return nil, err
+	}
+
+	configPath := filepath.Join(execDir, "config.json")
+
+	bytes, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
