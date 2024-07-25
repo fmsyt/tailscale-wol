@@ -94,26 +94,33 @@ func serve() {
 			t = &ConfigTarget{Mac: a}
 		}
 
+		var ct string
+		rc := r.URL.Query().Get("command")
+
+		if rc != "" {
+			ct = rc
+		} else if t.PreferredCommand == nil {
+			ct = "netcat"
+		} else {
+			ct = *t.PreferredCommand
+		}
+
+		var cmd string
+		if ct == "wol" {
+			cmd = buildWakeOnLanCommand(a, t.Ip, t.Port)
+		} else if ct == "netcat" {
+			cmd = buildNetCatCommand(a, t.Ip, t.Port)
+		} else {
+			http.Error(w, "Invalid preferredCommand", 400)
+			return
+		}
+
 		for _, host := range hosts {
-
-			var cmd string
-
-			if t.PreferredCommand == nil {
-				cmd = buildNetCatCommand(a, t.Ip, t.Port)
-			} else if *t.PreferredCommand == "wol" {
-				cmd = buildWakeOnLanCommand(a, t.Ip, t.Port)
-			} else if *t.PreferredCommand == "netcat" {
-				cmd = buildNetCatCommand(a, t.Ip, t.Port)
-			} else {
-				http.Error(w, "Invalid preferredCommand", 400)
-				return
-			}
-
 			_, err := sendCommand(host.Host, host.User, cmd, host.Port, host.Password, host.Identity)
 			if err == nil {
 				// http.ResponseWriter.WriteHeader(w, 204)
-				fmt.Printf("Sent WOL to %s\n", a)
-				fmt.Printf("Command: %s", cmd)
+				fmt.Fprintf(w, "Sent WOL to %s\n", a)
+				fmt.Fprintf(w, "Command: %s", cmd)
 				return
 			}
 		}

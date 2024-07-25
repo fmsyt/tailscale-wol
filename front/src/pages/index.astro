@@ -1,7 +1,8 @@
 ---
 import "../input.css";
 
-import MacAddressContainer from "../components/MacAddressContainer.svelte";
+import InputMacAddress from "../components/InputMacAddress.svelte";
+import Invoke from "../components/Invoke.svelte";
 ---
 
 <main class="h-svh grid place-content-center">
@@ -12,7 +13,18 @@ import MacAddressContainer from "../components/MacAddressContainer.svelte";
         alt="Shoes" />
     </figure>
     <div class="card-body justify-center gap-4">
-      <MacAddressContainer client:only="svelte" />
+      <div class="relative">
+        <div class="input input-bordered text-xl flex items-center p-0 w-full">
+          <InputMacAddress client:only="svelte" />
+        </div>
+        <button class="btn btn-ghost absolute top-0 right-0">Ghost</button>
+      </div>
+
+      <div class="card-actions justify-center">
+        <Invoke client:only="svelte" />
+      </div>
+
+
    </div>
   </div>
 </main>
