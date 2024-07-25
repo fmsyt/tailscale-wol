@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -191,8 +192,10 @@ func buildNetCatCommand(mac string, broadcast_ip *string, port *int) string {
 		p = 9 // Default port value
 	}
 
-	tpl := "bash -c '(for a in {1..6}; do echo -en \"\\xFF\"; done; for a in {1..16}; do echo -en \"\\x%s\"; done) | netcat -b -w1 -u %s %d'"
-	return fmt.Sprintf(tpl, mac, ip, p)
+	a := regexp.MustCompile("[:-]").ReplaceAllString(mac, "")
+
+	tpl := "bash -c '(printf 'FF%%.0s' {1..6}; printf %s'%%.0s' {1..16}) | sed 's/../\\\\\\\\\\\\\\\\x&/g' | xargs printf '%%b' | netcat -u -b -w1 %s %d'"
+	return fmt.Sprintf(tpl, a, ip, p)
 }
 
 func buildWakeOnLanCommand(mac string, broadcast_ip *string, port *int) string {
