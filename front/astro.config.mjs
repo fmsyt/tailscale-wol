@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import svelte from '@astrojs/svelte';
 
 import tailwind from "@astrojs/tailwind";
 
@@ -6,6 +7,7 @@ import tailwind from "@astrojs/tailwind";
 export default defineConfig({
   outDir: '../public',
   integrations: [
-    tailwind()
+    tailwind(),
+    svelte(),
   ]
 });
