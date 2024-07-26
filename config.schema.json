@@ -11,7 +11,7 @@
     "hosts": {
       "type": "array",
       "default": [],
-      "title": "The hosts Schema",
+      "title": "Connection information for the hosts",
       "items": {
         "type": "object",
         "default": {},
@@ -38,9 +38,14 @@
             "type": "string",
             "title": "Password for the user or the path to the identity file"
           },
-          "identity": {
+          "identityFile": {
             "type": "string",
             "title": "Path to the identity file"
+          },
+          "timeout": {
+            "type": "number",
+            "default": 3,
+            "title": "Timeout in seconds"
           }
         },
         "examples": [
@@ -66,7 +71,7 @@
     "targets": {
       "type": "array",
       "default": [],
-      "title": "The targets Schema",
+      "title": "WoL target devices",
       "items": {
         "type": "object",
         "default": {},

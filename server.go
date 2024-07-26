@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/crypto/ssh"
@@ -89,9 +90,12 @@ func serve() {
 		}
 		a = strings.Replace(a, "-", ":", -1)
 
-		t := findTarget(a, c)
+		t := findHost(a, *c)
 		if t == nil {
-			t = &ConfigTarget{Mac: a}
+			// t = &WoLTarget{Mac: a}.toWoLTarget()
+			ts := WoLTargetSchema{Mac: a}
+			_t := ts.toWoLTarget()
+			t = &_t
 		}
 
 		var ct string
@@ -99,24 +103,22 @@ func serve() {
 
 		if rc != "" {
 			ct = rc
-		} else if t.PreferredCommand == nil {
-			ct = "netcat"
 		} else {
-			ct = *t.PreferredCommand
+			ct = t.PreferredCommand
 		}
 
 		var cmd string
 		if ct == "wol" {
-			cmd = buildWakeOnLanCommand(a, t.Ip, t.Port)
+			cmd = buildWakeOnLanCommand(a, &t.Ip, &t.Port)
 		} else if ct == "netcat" {
-			cmd = buildNetCatCommand(a, t.Ip, t.Port)
+			cmd = buildNetCatCommand(a, &t.Ip, &t.Port)
 		} else {
 			http.Error(w, "Invalid preferredCommand", 400)
 			return
 		}
 
 		for _, host := range hosts {
-			_, err := sendCommand(host.Host, host.User, cmd, host.Port, host.Password, host.Identity)
+			_, err := sendCommand(cmd, host)
 			if err == nil {
 				// http.ResponseWriter.WriteHeader(w, 204)
 				fmt.Fprintf(w, "Sent WOL to %s\n", a)
@@ -142,25 +144,25 @@ func firstLabel(s string) string {
 	return s
 }
 
-func sendCommand(host string, user string, command string, port *int, password *string, identityFile *string) (string, error) {
+func sendCommand(command string, host ConnectionHost) (string, error) {
 
 	c := &ssh.ClientConfig{
-		User:            user,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // password認証は設定
+		User: host.User,
+		// HostKeyCallback: ssh.InsecureIgnoreHostKey(), // password認証は設定
+		Timeout: time.Duration(host.Timeout),
 	}
 
-	if password != nil {
-		c.Auth = append(c.Auth, ssh.Password(*password))
+	if host.Identity == nil { // 秘密鍵不要
+		c.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+	} else if host.Password == nil { // 秘密鍵認証
+		// FIXME: dont know how to do this
+	} else { // パスフレーズ付きの秘密鍵認証
+		// FIXME: dont know how to do this
 	}
 
-	var p int
-	if port != nil {
-		p = *port
-	} else {
-		p = 22 // Default port value
-	}
+	p := host.Port
 
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host, p), c)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Host, p), c)
 	if err != nil {
 		return "", err
 	}
@@ -201,7 +203,7 @@ func buildNetCatCommand(mac string, broadcast_ip *string, port *int) string {
 
 	a := regexp.MustCompile("[:-]").ReplaceAllString(mac, "")
 
-	tpl := "bash -c '(printf 'FF%%.0s' {1..6}; printf %s'%%.0s' {1..16}) | sed 's/../\\\\\\\\\\\\\\\\x&/g' | xargs printf '%%b' | netcat -u -b -w1 %s %d'"
+	tpl := "bash -c '(printf 'FF%%.0s' {1..6}; printf %s'%%.0s' {1..16}) | sed 's/../\\\\\\\\x&/g' | xargs printf '%%b' | netcat -u -b -w1 %s %d'"
 	return fmt.Sprintf(tpl, a, ip, p)
 }
 
