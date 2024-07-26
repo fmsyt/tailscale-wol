@@ -125,6 +125,8 @@ func serve() {
 				fmt.Fprintf(w, "Command: %s", cmd)
 				return
 			}
+
+			fmt.Fprintln(w, err.Error())
 		}
 
 		http.Error(w, "Failed to send WOL", 500)
