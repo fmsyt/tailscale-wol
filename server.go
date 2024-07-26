@@ -151,7 +151,7 @@ func sendCommand(command string, host ConnectionHost) (string, error) {
 	c := &ssh.ClientConfig{
 		User: host.User,
 		// HostKeyCallback: ssh.InsecureIgnoreHostKey(), // password認証は設定
-		Timeout: time.Duration(host.Timeout),
+		Timeout: time.Duration(host.Timeout) * time.Second,
 	}
 
 	if host.Identity == nil { // 秘密鍵不要
