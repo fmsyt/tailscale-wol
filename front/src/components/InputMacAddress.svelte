@@ -10,7 +10,7 @@
 
     params.update((prev) => ({
       ...prev,
-      macAddress: nextAddress,
+      a: nextAddress,
     }));
 
     target.value = nextAddress;

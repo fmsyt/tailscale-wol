@@ -15,7 +15,7 @@
 
     params.update((prev) => ({
       ...prev,
-      port: next,
+      p: next,
     }));
 
     target.value = next.toString();

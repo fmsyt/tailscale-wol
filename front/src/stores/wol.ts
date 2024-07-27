@@ -4,16 +4,23 @@ const macAddressMatcher = /^([\dA-Fa-f]{2}[:-]){5}([\dA-Fa-f]{2})$/;
 const ipMatcher = /^(\d{1,3}\.){3}\d{1,3}$/;
 
 export interface WolParams {
-  macAddress: string;
-  port: number | null;
-  broadcast: string | null;
+  /** MAC Address */
+  a: string;
+
+  /** Port */
+  p: number | null;
+
+  /** Broadcast IP */
+  b: string | null;
+
+  /** Command */
   command: "wol" | "netcat";
 }
 
 export const params = writable<WolParams>({
-  macAddress: '',
-  port: null,
-  broadcast: null,
+  a: '',
+  p: null,
+  b: null,
   command: 'wol'
 });
 
@@ -44,31 +51,30 @@ export function validateBroadcastIp(value: string) {
   return parts.every(part => parseInt(part) >= 0 && parseInt(part) <= 255);
 }
 
-export const isValidMacAddress = derived(params, $params => validateMacAddress($params.macAddress));
-export const isValidPort = derived(params, $params => !$params.port || validatePort($params.port));
-export const isValidBroadcast = derived(params, $params => !$params.broadcast || validateBroadcastIp($params.broadcast));
+export const isValidMacAddress = derived(params, $params => validateMacAddress($params.a));
+export const isValidPort = derived(params, $params => !$params.p || validatePort($params.p));
+export const isValidBroadcast = derived(params, $params => !$params.b || validateBroadcastIp($params.b));
 
 export type WolHandler = (params?: WolParams) => Promise<void>;
 
 export const wolHandler = derived<Writable<WolParams>, WolHandler | null>(params, ($params) => {
 
-  if (!validateMacAddress($params.macAddress)) {
+  if (!validateMacAddress($params.a)) {
     return null;
   }
 
-  if ($params.port && !validatePort($params.port)) {
+  if ($params.p && !validatePort($params.p)) {
     return null;
   }
 
-  if ($params.broadcast && !validateBroadcastIp($params.broadcast)) {
+  if ($params.b && !validateBroadcastIp($params.b)) {
     return null;
   }
 
   return async () => {
 
     const query = new URLSearchParams();
-    query.append('a', $params.macAddress);
-    Object.entries(params || {}).forEach(([key, value]) => {
+    Object.entries($params || {}).forEach(([key, value]) => {
       value && query.append(key, value);
     });
 

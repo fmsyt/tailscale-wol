@@ -9,7 +9,7 @@
 
     params.update((prev) => ({
       ...prev,
-      broadcast: next,
+      b: next,
     }));
 
     target.value = next;
