@@ -1,6 +1,6 @@
 <script lang="ts">
 
-  import { macAddress } from '../stores/wol.ts';
+  import { params } from '../stores/wol.ts';
 
   function handleInput(target: EventTarget & HTMLInputElement) {
     const value = target.value.replace(/[^\dA-Fa-f]/g, '').substring(0, 12).toUpperCase();
@@ -8,7 +8,11 @@
     const match = value.match(/.{1,2}/g);
     const nextAddress = match ? match.join(':') : '';
 
-    macAddress.set(nextAddress);
+    params.update((prev) => ({
+      ...prev,
+      macAddress: nextAddress,
+    }));
+
     target.value = nextAddress;
   }
 

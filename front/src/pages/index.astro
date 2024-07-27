@@ -1,32 +1,45 @@
 ---
 import "../input.css";
 
+import ButtonInvoke from "../components/ButtonInvoke.svelte";
+import InputBroadcastIp from "../components/InputBroadcastIp.svelte";
 import InputMacAddress from "../components/InputMacAddress.svelte";
-import Invoke from "../components/Invoke.svelte";
+import InputPort from "../components/InputPort.svelte";
+import Layout from "../layouts/Layout.astro";
 ---
 
-<main class="h-svh grid place-content-center">
-  <div class="card bg-base-100 image-full w-96 shadow-xl">
-    <figure>
-      <img
-        src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-        alt="Shoes" />
-    </figure>
-    <div class="card-body justify-center gap-4">
-      <div class="relative">
+<Layout title="Wake on Lan">
+  <main class="min-h-svh grid place-content-center" data-theme="coffee">
+    <div class="card bg-primary-content w-96 shadow-xl glass">
+      <div class="card-body justify-center gap-4">
         <div class="input input-bordered text-xl flex items-center p-0 w-full">
           <InputMacAddress client:only="svelte" />
         </div>
-        <button class="btn btn-ghost absolute top-0 right-0">Ghost</button>
-      </div>
 
-      <div class="card-actions justify-center">
-        <Invoke client:only="svelte" />
-      </div>
+        <div tabindex="0" class="collapse collapse-arrow">
+          <input type="checkbox" />
+          <div class="collapse-title">details</div>
+          <div class="collapse-content flex flex-col gap-1">
+            <label class="input input-bordered input-xs flex items-center gap-2">
+              <div class="w-[5em]">Port</div>
+              <InputPort client:only="svelte" />
+            </label>
+            <label class="input input-bordered input-xs flex items-center gap-2">
+              <div class="w-[5em]">Broadcast</div>
+              <InputBroadcastIp client:only="svelte" />
+            </label>
+          </div>
+        </div>
 
+        <div class="card-actions justify-center">
+          <ButtonInvoke
+            component="button"
+            variant="primary"
+            client:only="svelte"
+            />
+        </div>
 
-   </div>
-  </div>
-</main>
-
-
+     </div>
+    </div>
+  </main>
+</Layout>
