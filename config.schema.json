@@ -44,8 +44,8 @@
           },
           "timeout": {
             "type": "number",
-            "default": 3,
-            "title": "Timeout in seconds"
+            "default": 300,
+            "title": "Timeout in milliseconds"
           }
         },
         "examples": [

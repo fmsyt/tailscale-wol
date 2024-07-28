@@ -60,7 +60,7 @@ func (c ConnectionHostSchema) toConnectionHost() ConnectionHost {
 		port = *c.Port
 	}
 
-	timeout := 3
+	timeout := 300
 	if c.Timeout != nil {
 		timeout = *c.Timeout
 	}
