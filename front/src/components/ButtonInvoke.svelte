@@ -1,17 +1,36 @@
 <script lang="ts">
-    import { wolHandler } from '../stores/wol.ts';
+  import { wolHandler } from '../stores/wol.ts';
 
-    export let text = 'Send Packet';
-    export let variant = 'primary';
-    export let className = '';
+  export let text = 'Send Packet';
+  export let variant = 'primary';
+  export let className = '';
 
-    let buttonClassName = `btn btn-${variant} ${className}`;
+  let buttonClassName = `btn btn-${variant} ${className}`;
+  let invokeResult: string|null = null;
+
+  async function handleClick() {
+    if (invokeResult) {
+      return;
+    }
+
+    if (!$wolHandler) {
+      return;
+    }
+
+    invokeResult = null;
+
+    try {
+      invokeResult = await $wolHandler();
+    } catch (e) {
+      invokeResult = e instanceof Error ? e.message : 'An error occurred';
+    }
+  }
 </script>
 
 <button
-    class={buttonClassName}
-    disabled={!$wolHandler}
-    on:click={() => $wolHandler?.()}
+  class={buttonClassName}
+  disabled={!$wolHandler || !invokeResult}
+  on:click={handleClick}
 >
-    {text}
+  {text}
 </button>

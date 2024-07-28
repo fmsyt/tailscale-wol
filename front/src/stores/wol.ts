@@ -55,7 +55,7 @@ export const isValidMacAddress = derived(params, $params => validateMacAddress($
 export const isValidPort = derived(params, $params => !$params.p || validatePort($params.p));
 export const isValidBroadcast = derived(params, $params => !$params.b || validateBroadcastIp($params.b));
 
-export type WolHandler = (params?: WolParams) => Promise<void>;
+export type WolHandler = (params?: WolParams) => Promise<string>;
 
 export const wolHandler = derived<Writable<WolParams>, WolHandler | null>(params, ($params) => {
 
@@ -82,5 +82,8 @@ export const wolHandler = derived<Writable<WolParams>, WolHandler | null>(params
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);
     }
+
+    const text = await response.text();
+    return text;
   }
 })
