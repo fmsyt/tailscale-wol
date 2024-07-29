@@ -2,7 +2,8 @@ name: release
 
 on:
   push:
-    tags: [ "v*" ]
+    branches:
+      - release
 
 jobs:
 
@@ -48,7 +49,7 @@ jobs:
 
     - name: Archive
       run: |
-        zip -r release.zip \
+        zip -r release-${{ matrix.arch }}-${{ github.ref_name }}.zip \
           ./wol \
           ./.env.example \
           ./config.schema.json \
@@ -62,7 +63,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
@@ -74,6 +74,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./release.zip
+        asset_path: ./release-${{ matrix.arch }}-${{ github.ref_name }}.zip
         asset_name: release-${{ matrix.arch }}-${{ github.ref_name }}.zip
         asset_content_type: application/zip
