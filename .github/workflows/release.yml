@@ -1,15 +1,18 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
 name: release
 
 on:
   push:
     tags: [ "v*" ]
+    branches:
+      - release
 
 jobs:
 
   build:
+    strategy:
+      matrix:
+        arch: [ "amd", "arm" ]
+
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -38,7 +41,7 @@ jobs:
       run: pnpm run --dir ./front build
 
     - name: Build
-      run: go build -ldflags="-s -w" -trimpath
+      run: GOARCH=${{ matrix.arch }} go build -ldflags="-s -w" -trimpath
 
     - name: Archive
       run: |
@@ -69,5 +72,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./release.zip
-        asset_name: release-${{ github.ref_name }}.zip
+        asset_name: release-${{ matrix.arch }}-${{ github.ref_name }}.zip
         asset_content_type: application/zip
