@@ -79,12 +79,7 @@ jobs:
 
     - name: Archive
       run: |
-        cp .env.example dist/.env.example
-        cp config.schema.json dist/config.schema.json
-        cp config.json.example dist/config.json.example
-        cp setup-service.sh dist/setup-service.sh
-        cp -r public dist/public
-        zip -r -j release-${{ matrix.arch }}-${{ github.ref_name }}.zip dist
+        zip -r release-${{ matrix.arch }}-${{ github.ref_name }}.zip dist
 
     - name: Download artifact to get url to upload to release
       uses: actions/download-artifact@v1
