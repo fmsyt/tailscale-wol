@@ -42,7 +42,7 @@ jobs:
 
     - name: Build
       if:  matrix.arch == 'amd'
-      run: build -ldflags="-s -w" -trimpath
+      run: go build -ldflags="-s -w" -trimpath
 
     - name: Build (arm64)
       if:  matrix.arch == 'arm64'
