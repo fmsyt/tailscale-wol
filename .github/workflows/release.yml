@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        arch: [ "amd", "arm" ]
+        arch: [ "amd", "arm64" ]
 
     runs-on: ubuntu-latest
     steps:
@@ -41,6 +41,11 @@ jobs:
       run: pnpm run --dir ./front build
 
     - name: Build
+      if:  matrix.arch == 'amd'
+      run: build -ldflags="-s -w" -trimpath
+
+    - name: Build (arm64)
+      if:  matrix.arch == 'arm64'
       run: GOARCH=${{ matrix.arch }} go build -ldflags="-s -w" -trimpath
 
     - name: Archive
