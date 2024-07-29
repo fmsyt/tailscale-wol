@@ -164,6 +164,8 @@ func sendCommand(command string, host ConnectionHost) (string, error) {
 
 	p := host.Port
 
+	slog.Info("Connecting to %s:%d", host.Host, p)
+
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Host, p), c)
 	if err != nil {
 		return "", err
@@ -173,6 +175,7 @@ func sendCommand(command string, host ConnectionHost) (string, error) {
 
 	session, err := client.NewSession()
 	if err != nil {
+		slog.Error("Failed to create session: %s", err.Error())
 		return "", err
 	}
 
@@ -181,7 +184,10 @@ func sendCommand(command string, host ConnectionHost) (string, error) {
 	var b bytes.Buffer
 	session.Stdout = &b
 
+	slog.Info("Running command: %s", command)
+
 	if err := session.Run(command); err != nil {
+		slog.Error("Failed to run: %s", err.Error())
 		return "", err
 	}
 
