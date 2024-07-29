@@ -75,7 +75,7 @@ jobs:
       run: pnpm run --dir ./front build
 
     - name: Build for ${{ matrix.arch }}
-      run: GCO_ENABLED=0 GOOS=$goos GOARCH=${{ matrix.arch }} go build -ldflags="-s -w" -trimpath -o dist/wol
+      run: GCO_ENABLED=0 GOOS=$goos GOARCH=${{ matrix.arch }} go build -ldflags="-s -w" -trimpath
 
     - name: Archive
       run: |
