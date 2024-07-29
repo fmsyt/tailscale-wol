@@ -79,7 +79,13 @@ jobs:
 
     - name: Archive
       run: |
-        zip -r ${{ github.event.repository.name }}-${{ matrix.goos }}-${{ matrix.arch }}-${{ github.ref_name }}.zip dist
+        zip -r ${{ github.event.repository.name }}-${{ matrix.goos }}-${{ matrix.arch }}-${{ github.ref_name }}.zip \
+          ./wol \
+          ./.env.example \
+          ./config.schema.json \
+          ./config.json.example \
+          ./setup-service.sh \
+          ./public
 
     - name: Download artifact to get url to upload to release
       uses: actions/download-artifact@v1
