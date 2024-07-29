@@ -2,15 +2,23 @@ name: release
 
 on:
   push:
-    branches:
-      - release
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
 
   build:
     strategy:
       matrix:
-        arch: [ "amd", "arm64" ]
+        archtecture: [ "amd64", "arm64" ]
+        include:
+        - archtecture: amd64
+          goos: linux
+          arch: amd64
+        - archtecture: arm64
+          goos: linux
+          arch: arm64
+
 
     runs-on: ubuntu-latest
     steps:
@@ -39,23 +47,28 @@ jobs:
     - name: build frontend
       run: pnpm run --dir ./front build
 
-    - name: Build
-      if:  matrix.arch == 'amd'
-      run: go build -ldflags="-s -w" -trimpath
-
-    - name: Build (arm64)
-      if:  matrix.arch == 'arm64'
-      run: GOARCH=${{ matrix.arch }} go build -ldflags="-s -w" -trimpath
+    - name: Build for ${{ matrix.arch }}
+      run: GCO_ENABLED=0 GOOS=$goos GOARCH=${{ matrix.arch }} go build -ldflags="-s -w" -trimpath -o dist/wol
 
     - name: Archive
       run: |
-        zip -r release-${{ matrix.arch }}-${{ github.ref_name }}.zip \
-          ./wol \
-          ./.env.example \
-          ./config.schema.json \
-          ./config.json.example \
-          ./setup-service.sh \
-          ./public
+        cp .env.example dist/.env.example
+        cp config.schema.json dist/config.schema.json
+        cp config.json.example dist/config.json.example
+        cp setup-service.sh dist/setup-service.sh
+        cp -r public dist/public
+        zip -r -j release-${{ matrix.arch }}-${{ github.ref_name }}.zip dist
+
+    - name: Download artifact to get url to upload to release
+      uses: actions/download-artifact@v1
+      with:
+        name: artifact
+
+    - name: Get url to upload to release from artifact
+      id: get_url
+      run: |
+        url=$(cat artifact/url.txt)
+        echo "##[set-output name=upload_url;]$url"
 
     - name: Create release
       id: create_release
@@ -63,7 +76,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        release_name: Release
+        tag_name: ${{ github.ref_name }}
+        release_name: ${{ github.ref }}
         draft: false
         prerelease: false
 
@@ -73,7 +87,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./release-${{ matrix.arch }}-${{ github.ref_name }}.zip
-        asset_name: release-${{ matrix.arch }}-${{ github.ref_name }}.zip
-        asset_content_type: application/zip
+        upload_url: ${{ steps.get_url.outputs.upload_url }}
+        asset_path: ./${{ github.event.repository.name }}_${{ matrix.goos }}_${{ matrix.arch }}.zip
+        asset_name: ${{ github.event.repository.name }}_${{ matrix.goos }}_${{ matrix.arch }}.zip
+        asset_content_type: application/octet-stream
+
