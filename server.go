@@ -152,15 +152,11 @@ func sendCommand(command string, host ConnectionHost) (string, error) {
 		Timeout: time.Duration(host.Timeout) * time.Millisecond,
 	}
 
-	has_credential := false
-
 	if host.Password != nil {
-		has_credential = true
 		c.Auth = append(c.Auth, ssh.Password(*host.Password))
 	}
 
 	if host.Identity != nil { // 秘密鍵不要
-		has_credential = true
 
 		p := *host.Identity
 		key, err := os.ReadFile(p)
@@ -175,9 +171,7 @@ func sendCommand(command string, host ConnectionHost) (string, error) {
 		c.Auth = append(c.Auth, ssh.PublicKeys(signer))
 	}
 
-	if !has_credential {
-		c.HostKeyCallback = ssh.InsecureIgnoreHostKey()
-	}
+	c.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 
 	p := host.Port
 
