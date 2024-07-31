@@ -120,16 +120,14 @@ func serve() {
 		for _, host := range hosts {
 			_, err := sendCommand(cmd, host)
 			if err == nil {
-				// http.ResponseWriter.WriteHeader(w, 204)
-				fmt.Fprintf(w, "Sent WOL to %s\n", a)
-				fmt.Fprintf(w, "Command: %s", cmd)
+				fmt.Fprintf(w, "Sent WOL for %s", a)
 				return
 			}
 
 			fmt.Fprintln(w, err.Error())
 		}
 
-		http.Error(w, "Failed to send WOL", 500)
+		http.Error(w, "Failed to send WOL packet", 500)
 	})
 
 	appPath, err := appPath()
@@ -154,12 +152,31 @@ func sendCommand(command string, host ConnectionHost) (string, error) {
 		Timeout: time.Duration(host.Timeout) * time.Millisecond,
 	}
 
-	if host.Identity == nil { // 秘密鍵不要
+	has_credential := false
+
+	if host.Password != nil {
+		has_credential = true
+		c.Auth = append(c.Auth, ssh.Password(*host.Password))
+	}
+
+	if host.Identity != nil { // 秘密鍵不要
+		has_credential = true
+
+		p := *host.Identity
+		key, err := os.ReadFile(p)
+		if err != nil {
+			return "", err
+		}
+		signer, err := ssh.ParsePrivateKey(key)
+		if err != nil {
+			return "", err
+		}
+
+		c.Auth = append(c.Auth, ssh.PublicKeys(signer))
+	}
+
+	if !has_credential {
 		c.HostKeyCallback = ssh.InsecureIgnoreHostKey()
-	} else if host.Password == nil { // 秘密鍵認証
-		// FIXME: dont know how to do this
-	} else { // パスフレーズ付きの秘密鍵認証
-		// FIXME: dont know how to do this
 	}
 
 	p := host.Port
