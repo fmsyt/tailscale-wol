@@ -123,8 +123,6 @@ func serve() {
 				fmt.Fprintf(w, "Sent WOL for %s", a)
 				return
 			}
-
-			fmt.Fprintln(w, err.Error())
 		}
 
 		http.Error(w, "Failed to send WOL packet", 500)
