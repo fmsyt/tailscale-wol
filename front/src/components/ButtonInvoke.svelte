@@ -8,6 +8,8 @@
   let buttonClassName = `btn btn-${variant} ${className}`;
   let invokeResult: string|null = null;
 
+  let disabled = true;
+
   async function handleClick() {
     if (invokeResult) {
       return;
@@ -25,11 +27,13 @@
       invokeResult = e instanceof Error ? e.message : 'An error occurred';
     }
   }
+
+  $: disabled = !$wolHandler || Boolean(invokeResult);
 </script>
 
 <button
   class={buttonClassName}
-  disabled={!$wolHandler || !invokeResult}
+  disabled={disabled}
   on:click={handleClick}
 >
   {text}
