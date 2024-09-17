@@ -31,7 +31,7 @@ jobs:
     - name: Upload artifact to share url with other jobs
       uses: actions/upload-artifact@v4
       with:
-        name: artifact
+        name: my-artifact
         path: artifact/url.txt
 
   build:
@@ -91,7 +91,7 @@ jobs:
     - name: Download artifact to get url to upload to release
       uses: actions/download-artifact@v4
       with:
-        name: artifact
+        name: my-artifact
 
     - name: Get url to upload to release from artifact
       id: get_url
