@@ -93,6 +93,9 @@ jobs:
       with:
         name: my-artifact
 
+    - name: check current directory tree
+      run: ls -R
+
     - name: Get url to upload to release from artifact
       id: get_url
       run: |
