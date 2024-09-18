@@ -24,15 +24,13 @@ jobs:
     - name: Get url to upload to release from output
       env:
         url: ${{ steps.create_release.outputs.upload_url }}
-      run: |
-        mkdir artifact
-        echo $url > artifact/url.txt
-        echo $(realpath artifact/url.txt)
+      run: echo $url > url.txt
+
     - name: Upload artifact to share url with other jobs
       uses: actions/upload-artifact@v4
       with:
-        name: my-artifact
-        path: artifact/url.txt
+        name: artifact
+        path: url.txt
 
   build:
     needs: setup-release
@@ -91,7 +89,8 @@ jobs:
     - name: Download artifact to get url to upload to release
       uses: actions/download-artifact@v4
       with:
-        name: my-artifact
+        name: artifact
+        path: url.txt
 
     - name: check current directory tree
       run: ls -R
@@ -99,7 +98,7 @@ jobs:
     - name: Get url to upload to release from artifact
       id: get_url
       run: |
-        url=$(cat artifact/url.txt)
+        url=$(cat url.txt)
         echo "##[set-output name=upload_url;]$url"
 
     - name: Upload release asset
