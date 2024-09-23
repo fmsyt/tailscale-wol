@@ -23,4 +23,5 @@
   type="text"
   class="grow text-center"
   placeholder="MAC Address"
+  autocomplete="off"
   />
